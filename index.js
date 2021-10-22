@@ -26,6 +26,7 @@ async function getSubredditImage(sub = "wrx"){
         return res.data.data.children[i].data.url;
       }
     }
+    return "Nothing found"
   } catch (e) {
     return "Oops idk what happened"
   }
