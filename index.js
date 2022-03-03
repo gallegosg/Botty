@@ -36,7 +36,7 @@ const getDetails = async (user, userHash, XSTSToken) => {
     })
     return res
   } catch (err) {
-    return "Oops idk what happened getting details";
+    return false;
   }
 }
 
@@ -98,12 +98,6 @@ const getFonz = async (msg) => {
 }
 client.on("message", async (msg) => {
   switch (msg.content) {
-    case "ttest":
-      const { userHash, XSTSToken } = await logIn();
-      const xuid = await getDetails('Shastaicious', userHash, XSTSToken);
-      const status = await getStatus(xuid, userHash, XSTSToken);
-      msg.channel.send(status);
-      break;
     case "ping":
       msg.reply("Pong!");
       break;
@@ -149,8 +143,12 @@ client.on("message", async (msg) => {
           msg.channel.send("Here's the status for " + user); //Replies to user command
           const { userHash, XSTSToken } = await logIn();
           const xuid = await getDetails(user, userHash, XSTSToken);
-          const status = await getStatus(xuid, userHash, XSTSToken);
-          msg.channel.send(status); //send the image URL
+          if (xuid) {
+            const status = await getStatus(xuid, userHash, XSTSToken);
+            msg.channel.send(status);
+          } else {
+            msg.channel.send("User not found");
+          }
         }
       }
   }
