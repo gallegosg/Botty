@@ -1,18 +1,46 @@
-require("dotenv").config();
-const Discord = require("discord.js");
-const { Client, Intents, Collection } = require("discord.js");
-const axios = require("axios");
+import dotenv from 'dotenv'
+dotenv.config()
+// require("dotenv").config();
+// const Discord = require("discord.js");
+import { Client, Intents } from "discord.js";
+// const { Client, Intents, Collection } = require("discord.js");
+// const axios = require("axios");
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
+import Discord from "discord.js";
+import axios from "axios";
+import XboxLiveAPI from '@xboxreplay/xboxlive-api';
+
 // const authenticate = require("@xboxreplay/xboxlive-auth");
+import { authenticate } from '@xboxreplay/xboxlive-auth'
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  // authenticate("name@domain.com", "*********")
-  //   .then(console.log("test"))
-  //   .catch(console.log("test"));
 });
+
+const logIn = async () => {
+  try {
+    const auth = authenticate(process.env.XBOX_ACCOUNT, process.env.XBOX_PASS);
+    return { userHash: auth.userHash, XSTSToken: auth.XSTSToken }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const getDetails = async (user, userHash, XSTSToken) => {
+  try {
+    const res = XboxLiveAPI.getPlayerSettings(user, {
+      userHash,
+      XSTSToken
+    }, ['UniqueModernGamertag', 'GameDisplayPicRaw', 'Gamerscore', 'Location'])
+    if (res.length > 1) {
+      return res[3].value || 'Not Online';
+    }
+  } catch (err) {
+    console.log(err)
+  }
+}
 
 async function getMeme() {
   try {
@@ -77,6 +105,14 @@ client.on("message", async (msg) => {
           msg.channel.send("Here's a random pic from r/" + sub); //Replies to user command
           const redditImage = await getSubredditImage(sub);
           msg.channel.send(redditImage); //send the image URL
+        }
+      } else if (msg.content.startsWith("!xstatus")) {
+        const user = msg.content.split("!xstatus ")[1];
+        if (user) {
+          const { userHash, XSTSToken } = await logIn();
+          const status = await getDetails(user, userHash, XSTSToken);
+          msg.channel.send("Here's the status for " + user); //Replies to user command
+          msg.channel.send(status); //send the image URL
         }
       }
   }
