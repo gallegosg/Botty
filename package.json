@@ -22,6 +22,7 @@
     "@xboxreplay/xboxlive-auth": "^4.0.0",
     "axios": "^0.23.0",
     "discord.js": "^13.2.0",
-    "dotenv": "^10.0.0"
+    "dotenv": "^10.0.0",
+    "insult": "^0.0.3"
   }
 }
