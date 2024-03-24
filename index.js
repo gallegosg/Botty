@@ -95,28 +95,28 @@ client.on("messageCreate", async (msg) => {
       case "!rnd":
         msg.reply(
           "Type a subreddit to get a random post from it ex: `!rnd wrx`"
-        ); //Replies to user command
+        );
         break;
       case "!joke":
         const { joke, delivery } = await getJoke();
-        msg.reply(joke).then((sent) => {
-          if (delivery) {
-            setTimeout(() => {
-              sent.reply(delivery);
-            }, 3000);
-          }
-        });
+        msg.reply(joke);
+        if (delivery) {
+          setTimeout(() => {
+            msg.channel.send(delivery);
+          }, 3000);
+        }
         break;
       case "!help":
-        msg.channel.send(`ping - check if the server is up. will return pong
-      !meme - generates a random meme
-      !on - let everyone know you are onine and ready to play
-      !wt - ask the group what time they are going to get on to play
-      !rnd {subreddit} - returns a random post from the subreddit specified
-      !help - returns this list of commands supported
-      !joke - tells a joke
-      @Botty - chat with botty
-      `);
+        msg.channel.send(`Available Commands
+          ping - check if the server is up. will return pong
+          !meme - generates a random meme
+          !on - let everyone know you are onine and ready to play
+          !wt - ask the group what time they are going to get on to play
+          !rnd {subreddit} - returns a random post from the subreddit specified
+          !help - returns this list of commands supported
+          !joke - tells a joke
+          @Botty - chat with botty
+          `);
         break;
       default:
         if (msg.content.startsWith("!rnd ")) {
