@@ -1,5 +1,5 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import dotenv from "dotenv";
+dotenv.config();
 // require("dotenv").config();
 // const Discord = require("discord.js");
 import { Client, Intents } from "discord.js";
@@ -8,56 +8,13 @@ import { Client, Intents } from "discord.js";
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
-import Discord from "discord.js";
 import axios from "axios";
-import XboxLiveAPI from '@xboxreplay/xboxlive-api';
 
 // const authenticate = require("@xboxreplay/xboxlive-auth");
-import { authenticate } from '@xboxreplay/xboxlive-auth'
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
-
-const logIn = async () => {
-  try {
-    const auth = await authenticate(process.env.XBOX_ACCOUNT, process.env.XBOX_PASS);
-    return { userHash: auth.user_hash, XSTSToken: auth.xsts_token }
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-const getDetails = async (user, userHash, XSTSToken) => {
-  try {
-    const res = await XboxLiveAPI.getPlayerXUID(user, {
-      userHash,
-      XSTSToken
-    })
-    return res
-  } catch (err) {
-    return false;
-  }
-}
-
-const getStatus = async (xuid, userHash, XSTSToken) => {
-  try {
-    const config = {
-      url: `https://peoplehub.xboxlive.com/users/me/people/xuids(${xuid})/decoration/presenceDetail`,
-      method: 'GET'
-    }
-    const auth = {
-      userHash,
-      XSTSToken
-    }
-    const res = await XboxLiveAPI.call(config, auth, 2);
-    if (res.people.length === 1) {
-      return res.people[0].presenceText;
-    }
-  } catch (err) {
-    return "Oops idk what happened getting status";
-  }
-}
 
 async function getMeme() {
   try {
@@ -84,19 +41,8 @@ async function getSubredditImage(sub = "wrx") {
     return "Oops idk what happened";
   }
 }
-const getFonz = async (msg) => {
-  try {
-    msg.channel.send("Here's the status for Sircaptin64"); //Replies to user command
-    const { userHash, XSTSToken } = await logIn();
-    const xuid = await getDetails('Sircaptin64', userHash, XSTSToken);
-    const status = await getStatus(xuid, userHash, XSTSToken);
-    msg.channel.send(status); //send the image URL
-  } catch (err) {
-    console.log(err)
-    msg.channel.send('error'); //send the image URL
-  }
-}
-client.on("message", async (msg) => {
+
+client.on("messageCreate", async (msg) => {
   switch (msg.content) {
     case "ping":
       msg.reply("Pong!");
@@ -123,9 +69,6 @@ client.on("message", async (msg) => {
         sentEmbed.react("🕖");
       });
       break;
-    case "!xfonz":
-      await getFonz(msg)
-      break;
     case "!rnd":
       msg.reply("Type a subreddit to get a random post from it ex: `!rnd wrx`"); //Replies to user command
       break;
@@ -137,22 +80,9 @@ client.on("message", async (msg) => {
           const redditImage = await getSubredditImage(sub);
           msg.channel.send(redditImage); //send the image URL
         }
-      } else if (msg.content.startsWith("!xstatus")) {
-        const user = msg.content.split("!xstatus ")[1];
-        if (user) {
-          msg.channel.send("Here's the status for " + user); //Replies to user command
-          const { userHash, XSTSToken } = await logIn();
-          const xuid = await getDetails(user, userHash, XSTSToken);
-          if (xuid) {
-            const status = await getStatus(xuid, userHash, XSTSToken);
-            msg.channel.send(status);
-          } else {
-            msg.channel.send("User not found");
-          }
-        }
       }
   }
 });
 
 //make sure this line is the last line
-client.login(process.env.CLIENT_TOKEN); //login client using token
+client.login(`${process.env.CLIENT_TOKEN}`); //login client using token
