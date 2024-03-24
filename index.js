@@ -42,30 +42,31 @@ async function getSubredditImage(sub = "wrx") {
   }
 }
 
-const getJoke = async () => {
+async function getJoke() {
   try {
     const res = await axios.get("https://v2.jokeapi.dev/joke/Dark");
-    const { data } = res;
     const output = { joke: "", punchline: "" };
 
-    if (data.joke) {
-      output.joke = data.joke;
-    } else if (data.setup && data.delivery) {
-      output.joke = data.setup;
-      output.delivery = data.delivery;
+    if (res.data.joke) {
+      output.joke = res.data.joke;
+    } else if (res.data.setup && res.data.delivery) {
+      output.joke = res.data.setup;
+      output.delivery = res.data.delivery;
     }
     return output;
-  } catch (_) {
+  } catch (e) {
     return "Uh oh, nothing happened";
   }
-};
+}
 
 client.on("messageCreate", async (msg) => {
   try {
+    if (msg.author.bot) return;
     if (msg.mentions.has(client.user)) {
       msg.reply(insulter.Insult());
       return;
     }
+
     switch (msg.content) {
       case "ping":
         msg.reply("Pong!");
@@ -99,12 +100,13 @@ client.on("messageCreate", async (msg) => {
         break;
       case "!joke":
         const { joke, delivery } = await getJoke();
-        msg.reply(joke);
-        if (delivery) {
-          setTimeout(() => {
-            msg.channel.send(delivery);
-          }, 3000);
-        }
+        msg.reply(joke).then((sent) => {
+          if (delivery) {
+            setTimeout(() => {
+              sent.reply(delivery);
+            }, 3000);
+          }
+        });
         break;
       case "!help":
         msg.channel.send(`Available Commands
@@ -128,8 +130,8 @@ client.on("messageCreate", async (msg) => {
           }
         }
     }
-  } catch {
-    msg.channel.send("uh");
+  } catch (e) {
+    msg.channel.send("uhh");
   }
 });
 
