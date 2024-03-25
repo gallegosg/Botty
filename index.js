@@ -1,16 +1,16 @@
 import dotenv from "dotenv";
 dotenv.config();
-// require("dotenv").config();
-// const Discord = require("discord.js");
+
 import { Client, Intents } from "discord.js";
-// const { Client, Intents, Collection } = require("discord.js");
-// const axios = require("axios");
+
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
 import axios from "axios";
 import insulter from "insult";
-// const authenticate = require("@xboxreplay/xboxlive-auth");
+import OpenAI from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.OPEN_AI_SECRET });
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -44,7 +44,9 @@ async function getSubredditImage(sub = "wrx") {
 
 async function getJoke() {
   try {
-    const res = await axios.get("https://v2.jokeapi.dev/joke/Dark");
+    const res = await axios.get(
+      "https://v2.jokeapi.dev/joke/Miscellaneous,Dark,Pun,Spooky?blacklistFlags=religious"
+    );
     const output = { joke: "", punchline: "" };
 
     if (res.data.joke) {
@@ -59,11 +61,34 @@ async function getJoke() {
   }
 }
 
+async function chat(message = "what is your name") {
+  try {
+    const completion = await openai.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: `You are a discord bot for the server Macintosh. Your name is Botty. 
+          You are helpful with a bit of darkness and sassiness. 
+          You think Alfonso is cool and good at video games. You think Eman has a couple screws loose and somehow always has bad luck and is in love with Daniela. 
+          Dito is your creater whom you worship,`,
+        },
+        { role: "user", content: message },
+      ],
+      model: "gpt-3.5-turbo",
+    });
+
+    return completion.choices[0].message?.content;
+  } catch (e) {
+    return "ai is done uh oh";
+  }
+}
+
 client.on("messageCreate", async (msg) => {
   try {
     if (msg.author.bot) return;
     if (msg.mentions.has(client.user)) {
-      msg.reply(insulter.Insult());
+      const reply = await chat(msg.content);
+      msg.reply(reply);
       return;
     }
 
@@ -120,6 +145,8 @@ client.on("messageCreate", async (msg) => {
           @Botty - chat with botty
           `);
         break;
+      case "!insult":
+        msg.reply(insulter.Insult());
       default:
         if (msg.content.startsWith("!rnd ")) {
           const sub = msg.content.split("!rnd ")[1];
@@ -131,6 +158,7 @@ client.on("messageCreate", async (msg) => {
         }
     }
   } catch (e) {
+    console.log(e);
     msg.channel.send("uhh");
   }
 });
