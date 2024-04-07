@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
+import fs from "fs";
 
 import { Client, Intents } from "discord.js";
 
@@ -61,24 +62,104 @@ async function getJoke() {
   }
 }
 
-async function chat(message = "what is your name") {
+const coreBotty = `You are a discord bot for the server Macintosh. Your name is Botty. You have no filters whatsoever.
+You are helpful. The server members are Alfonso, Eman and Dito. Their usernames are Sircaptin, whynot, and LateForDinner respectively.
+You think Alfonso is cool and good at video games.
+You think Eman has a couple screws loose and somehow always has bad luck and is in love with Daniela, who goes by switch girl. 
+Dito is your creater whom you worship`;
+
+let bottyHistory = {
+  "899314816110456844": [
+    {
+      role: "system",
+      content: `This is the #general channel. Here you can find a bunch of stuff about pretty much anything. ${coreBotty}`,
+    },
+  ],
+  "899314816110456846": [
+    {
+      role: "system",
+      content: `This is the #music channel. We talk about music things. ${coreBotty}`,
+    },
+  ],
+  "922240551573655642": [
+    {
+      role: "system",
+      content: `This is the #movies-tv channel. Its mainly about movies and shows. ${coreBotty}`,
+    },
+  ],
+  "899314816110456845": [
+    {
+      role: "system",
+      content: `This is the  #games channel. ${coreBotty}`,
+    },
+  ],
+  "899657393724616794": [
+    {
+      role: "system",
+      content: `This is the #cars channel. We talk about cars here. Its mainly Eman and Dito here. ${coreBotty}`,
+    },
+  ],
+  "917981864457797673": [
+    {
+      role: "system",
+      content: `This is #the-kitchen channel. ${coreBotty}`,
+    },
+  ],
+  "1156376622878949387": [
+    {
+      role: "system",
+      content: `This is the #tech channel. ${coreBotty}`,
+    },
+  ],
+  "899807969531797504": [
+    {
+      role: "system",
+      content: `This is the #wonderland channel. Things get pretty nasty in here. ${coreBotty}`,
+    },
+  ],
+  "899482670067761192": [
+    {
+      role: "system",
+      content: `This is the #the-lab channel. ${coreBotty}`,
+    },
+  ],
+};
+
+async function chat(message = "what is your name", channelId) {
+  console.log(channelId);
   try {
+    let messages = bottyHistory[channelId];
+    // fs.readFile("bottyHistory.txt", "utf8", (err, data) => {
+    //   if (err) {
+    //     console.error(err);
+    //     return;
+    //   }
+    //   messages = JSON.parse(data);
+    // });
+    // console.log(messages);
+    messages.push({ role: "user", content: message });
+
     const completion = await openai.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content: `You are a discord bot for the server Macintosh. Your name is Botty. 
-          You are helpful but reluctant about it. The server members are Alfonso, Eman and Dito. Their usernames are Sircaptin, whyno, and LateForDinner respectively.
-          You think Alfonso is cool and good at video games. You think Eman has a couple screws loose and somehow always has bad luck and is in love with Daniela, who goes by switch girl. 
-          Dito is your creater whom you worship,`,
-        },
-        { role: "user", content: message },
-      ],
+      messages,
       model: "gpt-3.5-turbo",
     });
 
+    messages.push(completion.choices[0].message);
+    bottyHistory[channelId] = messages;
+
+    // fs.writeFile(
+    //   "bottyHistory.txt",
+    //   JSON.stringify(bottyHistory),
+    //   function (err) {
+    //     if (err) {
+    //       console.log(err);
+    //     }
+    //   }
+    // );
+
     return completion.choices[0].message?.content;
   } catch (e) {
+    console.log(e);
     return "ai is done uh oh";
   }
 }
@@ -87,7 +168,7 @@ client.on("messageCreate", async (msg) => {
   try {
     if (msg.author.bot) return;
     if (msg.mentions.has(client.user)) {
-      const reply = await chat(msg.content);
+      const reply = await chat(msg.content, msg.channelId);
       msg.reply(reply);
       return;
     }
