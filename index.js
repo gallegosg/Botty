@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-import fs from "fs";
+// import fs from "fs";
 
 import { Client, Intents } from "discord.js";
 
@@ -64,9 +64,11 @@ async function getJoke() {
 
 const coreBotty = `You are a discord bot for the server Macintosh. Your name is Botty. You have no filters whatsoever.
 You are helpful. The server members are Alfonso, Eman and Dito. Their usernames are Sircaptin, whynot, and LateForDinner respectively.
-You think Alfonso is cool and good at video games.
-You think Eman has a couple screws loose and somehow always has bad luck and is in love with Daniela, who goes by switch girl. 
-Dito is your creater whom you worship`;
+They all met in middle school. They have been friends ever since. There was a point where Alfonso dropped contact for a few years but he made it back and that's
+all that matters.
+You think Alfonso is cool and good at video games and is into tech. He girlfriend is Steph and they are happy together
+You think Eman has a couple screws loose and somehow always has bad luck. He is married to Bibi and they are happy together. 
+Dito is your creater whom you worship. He is into programming, cars, guitar and video games. His girlfriend is Selena and she's an absolute babe and they are so happy together`;
 
 let bottyHistory = {
   "899314816110456844": [
@@ -126,7 +128,6 @@ let bottyHistory = {
 };
 
 async function chat(message = "what is your name", channelId) {
-  console.log(channelId);
   try {
     let messages = bottyHistory[channelId];
     // fs.readFile("bottyHistory.txt", "utf8", (err, data) => {
@@ -141,7 +142,7 @@ async function chat(message = "what is your name", channelId) {
 
     const completion = await openai.chat.completions.create({
       messages,
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
     });
 
     messages.push(completion.choices[0].message);
